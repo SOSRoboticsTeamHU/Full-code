@@ -33,10 +33,11 @@ movement = Movement(left_motor, right_motor)
 i2c = board.I2C()
 pca = PCA9685(i2c)
 pca.frequency = 50  # Hz
-servo_1 = servo.Servo(pca.channels[0])
-servo_2 = servo.Servo(pca.channels[1])
-servo_3 = servo.Servo(pca.channels[2])
-servo_grip = servo.Servo(pca.channels[3])
+servo_1 = servo.Servo(pca.channels[12])
+servo_2 = servo.Servo(pca.channels[13])
+servo_3 = servo.Servo(pca.channels[14])
+servo_4 = servo.Servo(pca.channels[11]
+servo_grip = servo.Servo(pca.channels[15])
 
 # Alaphelyzet
 servo_1.angle = 40
