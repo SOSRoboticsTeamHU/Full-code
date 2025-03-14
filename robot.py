@@ -34,10 +34,10 @@ servo_3 = servo.Servo(pca.channels[14])
 servo_back = servo.Servo(pca.channels[11])
 servo_grip = servo.Servo(pca.channels[15])
 
-servo_1.angle = 40
-servo_2.angle = 60
-servo_3.angle = 80
-servo_back.angle = 80
+servo_1.angle = 60
+servo_2.angle = 180
+servo_3.angle = 90
+servo_back.angle = 1
 servo_grip.angle = 90
 
 step = 10
@@ -50,7 +50,6 @@ def save_qr_data(qr_data):
         print(f"QR-code saved: {qr_data}")
     
     time.sleep(0.2) 
-    movement.stop()
 
 running = True
 while running:
@@ -73,7 +72,7 @@ while running:
             if event.key == pygame.K_i:
                 servo_1.angle = min(180, servo_1.angle + step)
             if event.key == pygame.K_k:
-                servo_1.angle = max(0, servo_1.angle - step)
+                servo_1.angle = max(60, servo_1.angle - step)
             if event.key == pygame.K_j:
                 servo_2.angle = min(180, servo_2.angle + step)
             if event.key == pygame.K_l:
@@ -91,26 +90,31 @@ while running:
             if event.key == pygame.K_q:
                 servo_back.angle = max(0, servo_back.angle - step)
             if event.key == pygame.K_z:
-                servo_1.angle = 40
-                servo_2.angle = 60
-                servo_3.angle = 80
+                servo_1.angle = 60
+                servo_2.angle = 180
+                servo_3.angle = 90
+                servo_back.angle = 1
                 servo_grip.angle = 90
         if event.type == pygame.KEYUP:
             if event.key in ( pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s ):
                 print("stopping")
                 movement.stop()
 
-    ret, frame = cap.read()
-    if ret:
+        ret, frame = cap.read()
+        if not ret:
+            print("Nem sikerült beolvasni a kameraképet.")
+            continue
         data, bbox, _ = qr_detector.detectAndDecode(frame)
+
         if bbox is not None and data:
+            print(f"QR-kód észlelve: {data}")
             save_qr_data(data)
             for i in range(len(bbox)):
                 points = bbox[i].astype(int)
                 for j in range(len(points)):
                     cv2.line(frame, tuple(points[j]), tuple(points[(j+1) % len(points)]), (0, 255, 0), 2)
             cv2.putText(frame, data, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.imshow("Camera View", frame)
+        cv2.imshow("QR Scanner - 1080p", frame)
         cv2.waitKey(1)
 
     pygame.display.flip()
