@@ -14,6 +14,8 @@ screen = pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Robot Control System")
 clock = pygame.time.Clock()
 
+direction = "idle"
+
 qr_detector = cv2.QRCodeDetector()
 cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -45,7 +47,7 @@ servo_grip.angle = 90
 
 step = 10
 
-logo = pygame.image.load("logo.png")  # Logó betöltése
+logo = pygame.image.load("logo2.png")  # Logó betöltése
 logo = pygame.transform.scale(logo, (100, 100))  # Méretezés
 
 def save_qr_data(qr_data):
@@ -77,19 +79,32 @@ def draw_grip_meter():
     pygame.draw.line(screen, (255, 0, 0), center, pointer, 3)
 
 def draw_arm_position():
-    base_x, base_y = 400, 300
-    scale = 2
-    shoulder_x = base_x
-    shoulder_y = base_y - servo_1.angle * scale
-    elbow_x = shoulder_x + servo_2.angle * scale // 2
-    elbow_y = shoulder_y - servo_2.angle * scale // 3
-    wrist_x = elbow_x + servo_3.angle * scale // 2
-    wrist_y = elbow_y - servo_3.angle * scale // 3
+    base_x, base_y = 500, 300
+
+    pygame.draw.rect(screen, (0, 0, 255), (370, 300, 150, 50), 2)
+
+    angle1 = math.radians(servo_1.angle)  
+    angle2 = math.radians(servo_2.angle)  
+    angle3 = math.radians(servo_3.angle)  
+
+
+    joint1_x = base_x + 50 * math.cos(angle1)
+    joint1_y = base_y - 50 * math.sin(angle1)  
+    pygame.draw.line(screen, (0, 0, 255), (base_x, base_y), (joint1_x, joint1_y), 5)
+
+   
+    joint2_x = joint1_x + 50 * math.cos(angle1 + angle2)
+    joint2_y = joint1_y - 50 * math.sin(angle1 + angle2)
+    pygame.draw.line(screen, (0, 255, 0), (joint1_x, joint1_y), (joint2_x, joint2_y), 5)
+
+   
+    end_x = joint2_x + 30 * math.cos(angle1 + angle2 + angle3)
+    end_y = joint2_y - 30 * math.sin(angle1 + angle2 + angle3)
+    pygame.draw.line(screen, (255, 0, 0), (joint2_x, joint2_y), (end_x, end_y), 5)
+
     
-    pygame.draw.line(screen, (0, 255, 0), (base_x, base_y), (shoulder_x, shoulder_y), 5)
-    pygame.draw.line(screen, (0, 255, 0), (shoulder_x, shoulder_y), (elbow_x, elbow_y), 5)
-    pygame.draw.line(screen, (0, 255, 0), (elbow_x, elbow_y), (wrist_x, wrist_y), 5)
-    pygame.draw.circle(screen, (255, 0, 0), (wrist_x, wrist_y), 5)
+    gripper_color = (0, 255, 0) if servo_grip.angle > 90 else (255, 0, 0)
+    pygame.draw.circle(screen, gripper_color, (int(end_x), int(end_y)), 10)
 
 running = True
 while running:
@@ -106,15 +121,19 @@ while running:
             if event.key == pygame.K_a:
                 print("left")
                 movement.turnLeft()
+                direction = "left"
             if event.key == pygame.K_d:
                 print("right")
                 movement.turnRight()
+                direction = "right"
             if event.key == pygame.K_w:
                 print("forward")
                 movement.forward()
+                direction = "forward"
             if event.key == pygame.K_s:
                 print("backward")
                 movement.backward()
+                direction = "backward"
             if event.key == pygame.K_i:
                 servo_1.angle = min(180, servo_1.angle + step)
             if event.key == pygame.K_k:
